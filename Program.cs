@@ -1,61 +1,67 @@
 ﻿/*
     Map generation starts from SW
     Then goes east, up, and north
-*/
 
-using System;
-using System.Linq;
+    Map is 64*64*64 except the outer most blocks will not show up in game effectively making it just a 62*62*62 grid
+
+    Blocks:
+    0: Air
+    1: Dirt
+    2: Ore
+    3: Gold
+    4: Diamond?
+    5: Basalt
+    6: Ladder
+    7: Explosive block
+    8: Jump block
+    9: Shock block
+    10: Ore bank (Red)
+    11: Ore bank (Blue)
+    12: Beacon (Red)
+    13: Beacon (Blue)
+    14: Road
+    15: Solid Block (Red)
+    16: Solid Block (Blue)
+    17: Metal
+    18: "Dig here!" dirt
+    19: Lava
+    20: Force field block (Red)
+    21: Force field block (Blue)
+*/
 
 namespace Infiniminer_map_maker
 {
     internal class Program
     {
+        public const Int32 MapSize = 62;
+
+        public const Int32 RowSize = MapSize;
+        public const Int32 PlaneSize = MapSize * MapSize;
+        public const Int32 MaxSize = MapSize * MapSize * MapSize;
+
         static void Main()
         {
-            const Int32 rowSize = 64;
-            const Int32 planeSize = 64 * 64;
-            const Int32 maxSize = 64 * 64 * 64;
-            //Cell[] lines = new Cell[maxSize];
-            List<Cell> lines = new List<Cell>();
+            Grid grid = new Grid(MapSize, MapSize, MapSize);
 
             Cell bank = new Cell(10, 0);
             Cell air = new Cell(0, 0);
 
-            // for (Int32 i = 0; i < 32; i++)
-            // {
-            //     for (Int32 j = 0; j < 2; j++)
-            //     {
-            //         lines.AddRange(Repeat(bank, 32));
-            //         lines.AddRange(Repeat(air, 32));
-            //     }
-            //     for (Int32 j = 0; j < 62; j++)
-            //     {
-            //         lines.AddRange(Repeat(air, 64));
-            //     }
-            // }
-            // for (Int32 i = 0; i < 32; i++)
-            // {
-            //     lines.AddRange(Repeat(air, 64 * 64));
-            // }
-
-            lines.AddRange(Repeat(bank, planeSize + rowSize + 1));
-
-            FillRemainingCells();
-
-            if (lines.Count != maxSize)
+            for (Int32 x = 0; x < MapSize; x++)
             {
-                Console.WriteLine($"Wrong linecount! ({lines.Count}, should be {maxSize})");
-            }
-            else
-            {
-                File.Delete(@"D:\.Programmas\Program Files (x86)\Zachtronics Industries\Infiniminer\maps\generated");
-                File.WriteAllLines(@"D:\.Programmas\Program Files (x86)\Zachtronics Industries\Infiniminer\maps\generated", lines.Select(line => line.ToString()));
+                for (Int32 z = 0; z < MapSize; z++)
+                {
+                    grid[x, 60, z] = new Cell(1, 0);
+                }
             }
 
-            void FillRemainingCells()
+            for (Int32 i = 0; i < 22; i++)
             {
-                lines.AddRange(Repeat(air, maxSize - lines.Count));
+                if (i == 19) continue;
+                grid[i, 61, 0] = new Cell(i, 0);
             }
+
+            File.Delete(@"D:\.Programmas\Program Files (x86)\Zachtronics Industries\Infiniminer\maps\generated");
+            File.WriteAllLines(@"D:\.Programmas\Program Files (x86)\Zachtronics Industries\Infiniminer\maps\generated", grid.To64Grid().ToLines());
         }
 
         static Cell[] Repeat(Cell block, Int32 times)
